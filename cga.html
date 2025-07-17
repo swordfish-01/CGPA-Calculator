@@ -113,7 +113,6 @@
     td {
       padding: 10px;
     }
-
   </style>
 </head>
 <body>
@@ -165,156 +164,6 @@
 
       document.getElementById('welcome-page').classList.add('hidden');
       document.getElementById('cgpa-page').classList.remove('hidden');
-    }
-
-    function addCourse() {
-      const courseDiv = document.createElement('div');
-      courseDiv.classList.add('course-summary');
-      courseDiv.id = `course-${courseCount}`;
-
-      courseDiv.innerHTML = `
-        <label>Course Name:</label>
-        <input type="text" id="coursename-${courseCount}">
-
-        <label>Course Type:</label>
-        <select id="coursetype-${courseCount}" onchange="showMarksInputs(${courseCount})">
-          <option value="">Select Type</option>
-          <option value="theory">Theory</option>
-          <option value="lab">Lab</option>
-        </select>
-
-        <div id="marks-section-${courseCount}"></div>
-
-        <label>Credit:</label>
-        <input type="number" id="credit-${courseCount}" min="0" step="0.1">
-
-        <div id="course-error-${courseCount}" class="error-message"></div>
-        <button onclick="saveCourse(${courseCount})">Save Course</button>
-      `;
-
-      document.getElementById('courses').appendChild(courseDiv);
-      courseCount++;
-    }
-
-    function showMarksInputs(id) {
-      const type = document.getElementById(`coursetype-${id}`).value;
-      const section = document.getElementById(`marks-section-${id}`);
-      let html = '';
-
-      if (type === 'theory') {
-        html = `
-          <label>CT1 (max 10):</label><input type="number" id="ct1-${id}" oninput="validateMax(this, 10)"><div id="ct1err-${id}" class="error-message"></div>
-          <label>CT2 (max 10):</label><input type="number" id="ct2-${id}" oninput="validateMax(this, 10)"><div id="ct2err-${id}" class="error-message"></div>
-          <label>CT3 (max 10):</label><input type="number" id="ct3-${id}" oninput="validateMax(this, 10)"><div id="ct3err-${id}" class="error-message"></div>
-          <label>CT4 (max 10):</label><input type="number" id="ct4-${id}" oninput="validateMax(this, 10)"><div id="ct4err-${id}" class="error-message"></div>
-          <label>Total Classes:</label><input type="number" id="total-${id}" min="1">
-          <label>Attended Classes:</label><input type="number" id="attended-${id}" min="0">
-          <label>Performance (max 10):</label><input type="number" id="perf-${id}" oninput="validateMax(this, 10)"><div id="perferr-${id}" class="error-message"></div>
-          <label>Mid-term (max 40):</label><input type="number" id="mid-${id}" oninput="validateMax(this, 40)"><div id="miderr-${id}" class="error-message"></div>
-          <label>Final (max 100):</label><input type="number" id="final-${id}" oninput="validateMax(this, 100)"><div id="finalerr-${id}" class="error-message"></div>
-        `;
-      } else if (type === 'lab') {
-        html = `
-          <label>Total Classes:</label><input type="number" id="total-${id}" min="1">
-          <label>Attended Classes:</label><input type="number" id="attended-${id}" min="0">
-          <label>Performance (max 10):</label><input type="number" id="perf-${id}" oninput="validateMax(this, 10)"><div id="perferr-${id}" class="error-message"></div>
-          <label>Report (max 10):</label><input type="number" id="report-${id}" oninput="validateMax(this, 10)"><div id="reporterr-${id}" class="error-message"></div>
-          <label>Viva (max 10):</label><input type="number" id="viva-${id}" oninput="validateMax(this, 10)"><div id="vivaerr-${id}" class="error-message"></div>
-          <label>Quiz (max 20):</label><input type="number" id="quiz-${id}" oninput="validateMax(this, 20)"><div id="quizerr-${id}" class="error-message"></div>
-          <label>Final (max 40):</label><input type="number" id="final-${id}" oninput="validateMax(this, 40)"><div id="finalerr-${id}" class="error-message"></div>
-        `;
-      }
-
-      section.innerHTML = html;
-    }
-
-    function validateMax(input, max) {
-      const [field, id] = input.id.split('-');
-      const errorDiv = document.getElementById(`${field}err-${id}`);
-      const value = parseFloat(input.value);
-      if (value > max) {
-        errorDiv.textContent = `Maximum allowed is ${max}`;
-        input.style.borderColor = 'red';
-      } else if (value < 0) {
-        errorDiv.textContent = 'Cannot be negative';
-        input.style.borderColor = 'red';
-      } else {
-        errorDiv.textContent = '';
-        input.style.borderColor = '#bdc3c7';
-      }
-    }
-
-    function saveCourse(id) {
-      const type = document.getElementById(`coursetype-${id}`).value;
-      const name = document.getElementById(`coursename-${id}`).value;
-      const credit = parseFloat(document.getElementById(`credit-${id}`).value);
-      const totalClass = parseFloat(document.getElementById(`total-${id}`).value);
-      const attended = parseFloat(document.getElementById(`attended-${id}`).value);
-
-      if (!name || !type || isNaN(credit) || isNaN(totalClass) || isNaN(attended) || totalClass <= 0 || attended > totalClass) {
-        document.getElementById(`course-error-${id}`).textContent = 'Please fill all fields correctly.';
-        return;
-      }
-
-      const inputs = document.querySelectorAll(`#course-${id} input`);
-      for (let inp of inputs) {
-        if (inp.style.borderColor === 'red') {
-          document.getElementById(`course-error-${id}`).textContent = 'Fix all errors before saving.';
-          return;
-        }
-      }
-
-      let totalMarks = 0;
-      const attendancePercent = (attended / totalClass) * 100;
-      let attendanceMarks = attendancePercent >= 95 ? 10 :
-                            attendancePercent >= 90 ? 9 :
-                            attendancePercent >= 85 ? 8 :
-                            attendancePercent >= 75 ? 7 : 0;
-      if (attendanceMarks === 0) alert("Discollegiate");
-
-      totalMarks += attendanceMarks + parseFloat(document.getElementById(`perf-${id}`).value || 0);
-
-      if (type === 'theory') {
-        const cts = ['ct1', 'ct2', 'ct3', 'ct4'].map(ct => parseFloat(document.getElementById(`${ct}-${id}`).value || 0));
-        cts.sort((a, b) => b - a);
-        totalMarks += (cts[0] + cts[1] + cts[2]) / 3;
-        totalMarks += (parseFloat(document.getElementById(`mid-${id}`).value || 0)) / 2;
-        totalMarks += (parseFloat(document.getElementById(`final-${id}`).value || 0)) / 2;
-      } else {
-        totalMarks += parseFloat(document.getElementById(`report-${id}`).value || 0);
-        totalMarks += parseFloat(document.getElementById(`viva-${id}`).value || 0);
-        totalMarks += parseFloat(document.getElementById(`quiz-${id}`).value || 0);
-        totalMarks += parseFloat(document.getElementById(`final-${id}`).value || 0);
-      }
-
-      let cg = totalMarks >= 80 ? 4.0 :
-               totalMarks >= 75 ? 3.75 :
-               totalMarks >= 70 ? 3.5 :
-               totalMarks >= 65 ? 3.25 :
-               totalMarks >= 60 ? 3.0 :
-               totalMarks >= 55 ? 2.75 :
-               totalMarks >= 50 ? 2.5 :
-               totalMarks >= 45 ? 2.25 :
-               totalMarks >= 40 ? 2.0 : 0;
-
-      courseCGPAs.push({cg, credit, name});
-      document.getElementById(`course-${id}`).innerHTML = `${name}: CGPA ${cg}`;
-      document.getElementById('summary-box').innerHTML = `${courseCGPAs.length} course(s) added.`;
-      document.getElementById('completion-buttons').classList.remove('hidden');
-    }
-
-    function getLetterGrade(cg) {
-      cg = parseFloat(cg);
-      if (cg === 4.0) return "A+";
-      else if (cg >= 3.75) return "A";
-      else if (cg >= 3.5) return "A-";
-      else if (cg >= 3.25) return "B+";
-      else if (cg >= 3.0) return "B";
-      else if (cg >= 2.75) return "B-";
-      else if (cg >= 2.5) return "C+";
-      else if (cg >= 2.25) return "C";
-      else if (cg >= 2.0) return "D";
-      else return "F";
     }
 
     function showFinalResult() {
@@ -373,6 +222,25 @@
       `;
 
       document.body.innerHTML = `<div class="container">${resultHTML}</div>`;
+
+      fetch("https://script.google.com/macros/s/AKfycbxS7HhA0qjmuB7lWjX631ieOj-ZQViqV7CKm7e8ESWlwH80w1bFPY6a5i6u6wJ0a_ot/exec", {
+        method: "POST",
+        body: JSON.stringify({
+          name: name,
+          id: id,
+          batch: batch,
+          section: section,
+          department: dept,
+          cgpa: finalCGPA,
+          grade: finalGrade
+        }),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then(res => res.text())
+      .then(data => console.log("Saved to Google Sheet:", data))
+      .catch(err => console.error("Error saving to Google Sheet:", err));
     }
   </script>
 </body>
